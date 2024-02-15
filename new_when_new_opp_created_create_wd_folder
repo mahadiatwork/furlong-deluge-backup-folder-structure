@@ -1,0 +1,33 @@
+//Create folders when opportunity created
+
+//opportunity_id = "";
+update_map = Map();
+opportunity_resp = zoho.crm.getRecordById("Deals",opportunity_id);
+info opportunity_resp;
+if(opportunity_resp.get("Account_Name") != null && opportunity_resp.get("Job_Book_Number") != null)
+{
+	opp_name_new = opportunity_resp.get("Job_Book_Number") + " - " + opportunity_resp.get("Account_Name").get("name");
+	info zoho.crm.updateRecord("Deals",opportunity_id,{"Deal_Name":opp_name_new},{"trigger":{""}});
+	opp_folder_name_wd = opportunity_resp.get("Job_Book_Number");
+	account_id = opportunity_resp.get("Account_Name").get("id");
+	acc_resp = zoho.crm.getRecordById("Accounts",account_id);
+	if(acc_resp.get("Opportunities_Folder_ID") != null)
+	{
+		opp_folder_id = acc_resp.get("Opportunities_Folder_ID");
+		opp_wd_folder_resp = zoho.workdrive.createFolder(opp_folder_name_wd,opp_folder_id,"workdrive_oauth_connection");
+		Folder_ID = opp_wd_folder_resp.get("data").get("id");
+		update_map.put("Folder_ID",Folder_ID);
+		folder_url_upd = "https://workdrive.zoho.com/home/imhzebf603611bf37415ca03d660608b8bcbf/ws/p6i21b7fd2837752749a4a21dde6ae8de7a41/folders/" + Folder_ID;
+		update_map.put("Opportunity_Folder_URL",folder_url_upd);
+		quotes_fol_resp = zoho.workdrive.createFolder("Quotes",Folder_ID,"workdrive_oauth_connection");
+		Quotes_f = quotes_fol_resp.get("data").get("id");
+		update_map.put("Quotes_Folder_ID",Quotes_f);
+		Projects_fol_resp = zoho.workdrive.createFolder("Projects",Folder_ID,"workdrive_oauth_connection");
+		Projects_f = Projects_fol_resp.get("data").get("id");
+		update_map.put("Projects_Folder_ID",Projects_f);
+		Documents_Folder_ID_fol_resp = zoho.workdrive.createFolder("General Documents",Folder_ID,"workdrive_oauth_connection");
+		Documents_Folder_ID = Documents_Folder_ID_fol_resp.get("data").get("id");
+		update_map.put("Other_Documents_Folder_ID",Documents_Folder_ID);
+		info zoho.crm.updateRecord("Deals",opportunity_id,update_map,{"trigger":{""}});
+	}
+}
