@@ -1,0 +1,86 @@
+fp_quotes_resp = zoho.crm.getRecordById("Job_Books",fp_quotes_id);
+Quote_No = fp_quotes_resp.get("Name");
+if(fp_quotes_resp.get("Account") != null)
+{
+	acc_id = fp_quotes_resp.get("Account").get("id");
+	acc_resp = zoho.crm.getRecordById("Accounts",acc_id);
+	Projects_folder_id = acc_resp.get("Projects_Folder_ID");
+	Quote_No = Quote_No + "-Cont-" + acc_resp.get("Account_Name");
+	Job_folder_resps = zoho.workdrive.createFolder(Quote_No,Projects_folder_id,"workdrive_oauth_connection");
+	update_fp_map = Map();
+	///////////////////////////////////////
+	office_folder_resps = zoho.workdrive.createFolder("Office Folder",Projects_folder_id,"workdrive_oauth_connection");
+	count = 0;
+	info office_folder_resps;
+	for each  office_folder_resp in office_folder_resps.get("data")
+	{
+		if(count == 0)
+		{
+			wd_office_folder_id = office_folder_resp;
+			info wd_office_folder_id;
+			update_fp_map.put("Office_Folder_ID",wd_office_folder_id);
+		}
+		count = count + 1;
+	}
+	///////////////////////////////////////////////
+	info Job_folder_resps;
+	count = 0;
+	for each  Job_folder_resp in Job_folder_resps.get("data")
+	{
+		if(count == 0)
+		{
+			quote_folder_id = Job_folder_resp;
+			info quote_folder_id;
+			update_fp_map.put("Quote_Folder_ID",quote_folder_id);
+		}
+		count = count + 1;
+	}
+	info zoho.crm.updateRecord("Job_Books",fp_quotes_id,update_fp_map,{"trigger":{""}});
+	//updating oppurtunityname to Quote Number - Account Name
+	// 	oppurtuninity_id = fp_quotes_resp.get("Project").get("id");
+	// 	opppur_name = Quote_No + " - " + acc_resp.get("Account_Name");
+	// 	info zoho.crm.updateRecord("Deals",oppurtuninity_id,{"Deal_Name":opppur_name},{"trigger":{""}});
+}
+else
+{
+	client_id = fp_quotes_resp.get("Client").get("id");
+	info client_id;
+	cont_resps = zoho.crm.getRecordById("Contacts",client_id);
+	acc_id = cont_resps.get("Account_Name").get("id");
+	acc_resp = zoho.crm.getRecordById("Accounts",acc_id);
+	Projects_folder_id = acc_resp.get("Projects_Folder_ID");
+	Quote_No = Quote_No + "-Cont-" + acc_resp.get("Account_Name");
+	Job_folder_resps = zoho.workdrive.createFolder(Quote_No,Projects_folder_id,"workdrive_oauth_connection");
+	update_fp_map = Map();
+	///////////////////////////////////////
+	count = 0;
+	office_folder_resps = zoho.workdrive.createFolder("Office Folder",Projects_folder_id,"workdrive_oauth_connection");
+	for each  office_folder_resp in office_folder_resps.get("data")
+	{
+		if(count == 0)
+		{
+			wd_office_folder_id = office_folder_resp;
+			info wd_office_folder_id;
+			update_fp_map.put("Office_Folder_ID",wd_office_folder_id);
+		}
+		count = count + 1;
+	}
+	///////////////////////////////////////////////
+	info Job_folder_resps;
+	count = 0;
+	for each  Job_folder_resp in Job_folder_resps.get("data")
+	{
+		if(count == 0)
+		{
+			quote_folder_id = Job_folder_resp;
+			info quote_folder_id;
+			update_fp_map.put("Quote_Folder_ID",quote_folder_id);
+		}
+		count = count + 1;
+	}
+	info zoho.crm.updateRecord("Job_Books",fp_quotes_id,update_fp_map,{"trigger":{""}});
+	//updating oppurtunityname to Quote Number - Account Name
+	// 	oppurtuninity_id = fp_quotes_resp.get("Project").get("id");
+	// 	opppur_name = Quote_No + " - " + acc_resp.get("Account_Name");
+	// 	info zoho.crm.updateRecord("Deals",oppurtuninity_id,{"Deal_Name":opppur_name},{"trigger":{""}});
+}
