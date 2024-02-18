@@ -1,0 +1,123 @@
+// start = 0;
+// // After first run, increase start to 5, like 5, 10, 15
+// per_page = 200;
+// fp_proj_responses = list();
+// fp_proj_responses.addAll( zoho.crm.getRecords("FP_Projects",1,200,{"cvid":1915689000026959106}));
+// fp_proj_responses.addAll( zoho.crm.getRecords("FP_Projects",2,200,{"cvid":1915689000026959106}));
+// fp_proj_responses.addAll( zoho.crm.getRecords("FP_Projects",3,200,{"cvid":1915689000026959106}));
+// fp_proj_responses.addAll( zoho.crm.getRecords("FP_Projects",4,200,{"cvid":1915689000026959106}));
+// fp_proj_responses.addAll( zoho.crm.getRecords("FP_Projects",5,200,{"cvid":1915689000026959106}));
+// update_lists = List();
+// fp_project_id= fp_proj_response.get("id");
+// info fp_project_id;
+Projects_office_Folder_ID = "";
+Site_Folder_URL = "";
+update_map = Map();
+info zoho.crm.updateRecord("FP_Projects",fp_project_id,{"Uniq_Rec_ID":fp_project_id.toString()});
+fp_project_resp = zoho.crm.getRecordById("FP_Projects",fp_project_id);
+//info fp_project_resp;
+if(fp_project_resp.get("Opportunities") != null && fp_project_resp.get("Name") != null)
+{
+	fp_project_name_folder = fp_project_resp.get("Name").getPrefix("-");
+	oppurt_id = fp_project_resp.get("Opportunities").get("id");
+	oppurt_resp = zoho.crm.getRecordById("Deals",oppurt_id);
+	if(oppurt_resp.get("Projects_Folder_ID") != null)
+	{
+		Proj_folder_id = oppurt_resp.get("Projects_Folder_ID");
+		proj_wd_folder_resp = zoho.workdrive.createFolder(fp_project_name_folder,Proj_folder_id,"workdrive_oauth_connection");
+		Projects_Folder_ID = proj_wd_folder_resp.get("data").get("id");
+		update_map.put("fp_project_folder_id",Projects_Folder_ID);
+		fp_project_folder_url = "https://workdrive.zoho.com/home/imhzebf603611bf37415ca03d660608b8bcbf/ws/p6i21b7fd2837752749a4a21dde6ae8de7a41/folders/" + Projects_Folder_ID;
+		update_map.put("fp_project_folder_url",fp_project_folder_url);
+		//info update_map;
+		info zoho.crm.updateRecord("FP_Projects",fp_project_id,update_map,{"trigger":{""}});
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		Proj_folder_id = Projects_Folder_ID;
+		//office_folder_wd_folder_resp = zoho.workdrive.createFolder("Office Folder",Proj_folder_id,"workdrive_oauth_connection");
+		Projects_office_Folder_ID = Projects_Folder_ID;
+		update_map.put("Projects_office_Folder_ID",Projects_office_Folder_ID);
+		Projects_Documents_Folder_ID_resp = zoho.workdrive.createFolder("Documents",Projects_office_Folder_ID,"workdrive_oauth_connection");
+		Projects_Documents_Folder_ID = Projects_Documents_Folder_ID_resp.get("data").get("id");
+		update_map.put("Projects_Documents_Folder_ID",Projects_Documents_Folder_ID);
+		site_folder_name = "Contractor - " + fp_project_resp.get("Name");
+		site_Folder_ID_resp = zoho.workdrive.createFolder(site_folder_name,Proj_folder_id,"workdrive_oauth_connection");
+		Projects_Site_Folder_ID = site_Folder_ID_resp.get("data").get("id");
+		update_map.put("Projects_Site_Folder_ID",Projects_Site_Folder_ID);
+		Projects_Photos_resp = zoho.workdrive.createFolder("Project Photos",Projects_Site_Folder_ID,"workdrive_oauth_connection");
+		Projects_Photos_Folder_ID = Projects_Photos_resp.get("data").get("id");
+		update_map.put("Projects_Photos_Folder_ID",Projects_Photos_Folder_ID);
+		/////////////////////////////////////////////////////////////////////////////////////////////////new wd url click view contractor
+		WD_Project_Forlder_Contractor_URL = "https://workdrive.zoho.com/home/imhzebf603611bf37415ca03d660608b8bcbf/ws/p6i21b7fd2837752749a4a21dde6ae8de7a41/folders/" + Projects_Site_Folder_ID;
+		info zoho.crm.updateRecord("FP_Projects",fp_project_id,{"WD_Project_Forlder_Contractor_URL":WD_Project_Forlder_Contractor_URL},{"trigger":{""}});
+		/////////////////////////////////////////////////////////////////////////////////////////////////new wd url click view contractor
+		// 		Site_Folder_URL	= "https://workdrive.zohoexternal.com/external/"+Projects_Site_Folder_ID;
+		// 		update_map.put("Site_Folder_URL",Site_Folder_URL);
+		param = Map();
+		param.put("resource_id",Projects_Site_Folder_ID);
+		param.put("link_name","Site Folder Link");
+		param.put("request_user_data",false);
+		param.put("allow_download",true);
+		attribure_map = {"attributes":param,"type":"links"};
+		datamap = Map();
+		datamap.put("data",attribure_map);
+		mp = Map();
+		mp.put("Accept","application/vnd.api+json");
+		response = invokeurl
+		[
+			url :"https://workdrive.zoho.com//api/v1/links"
+			type :Post
+			parameters:datamap.toString()
+			headers:mp
+			connection:"workdrive_oauth_connection"
+		];
+		workdrive_link = response.get("data").get("attributes").get("link");
+		info workdrive_link;
+		Site_Folder_URL = workdrive_link;
+		update_map.put("Site_Folder_URL",Site_Folder_URL);
+		info zoho.crm.updateRecord("FP_Projects",fp_project_id,update_map,{"trigger":{""}});
+	}
+}
+////////////////////////////////////////////////wd  proj folder
+update_map = Map();
+//fp_project_resp = zoho.crm.getRecordById("FP_Projects",fp_project_id);
+//info fp_project_resp;
+if(fp_project_resp.get("Site_Folder_URL") != null || Site_Folder_URL != "")
+{
+	if(Site_Folder_URL == "")
+	{
+		Site_Folder_URL = fp_project_resp.get("Site_Folder_URL");
+	}
+	update_map.put("Project_Folder_URL_Contractor",Site_Folder_URL);
+	//info zoho.crm.updateRecord("FP_Projects",fp_project_id,update_map,{"trigger":{""}});
+}
+if(fp_project_resp.get("Projects_office_Folder_ID") != null || Projects_office_Folder_ID != "")
+{
+	if(Projects_Site_Folder_ID == "")
+	{
+		Projects_Site_Folder_ID = fp_project_resp.get("Projects_office_Folder_ID");
+	}
+	param = Map();
+	param.put("resource_id",Projects_Site_Folder_ID);
+	param.put("link_name","Office Folder Link");
+	param.put("request_user_data",false);
+	param.put("allow_download",true);
+	attribure_map = {"attributes":param,"type":"links"};
+	datamap = Map();
+	datamap.put("data",attribure_map);
+	mp = Map();
+	mp.put("Accept","application/vnd.api+json");
+	response = invokeurl
+	[
+		url :"https://workdrive.zoho.com//api/v1/links"
+		type :Post
+		parameters:datamap.toString()
+		headers:mp
+		connection:"workdrive_oauth_connection"
+	];
+	info workdrive_link;
+	workdrive_link = response.get("data").get("attributes").get("link");
+	//info workdrive_link;
+	Project_Folder_URL_Office = workdrive_link;
+	update_map.put("Project_Folder_URL_Office",Project_Folder_URL_Office);
+}
+info zoho.crm.updateRecord("FP_Projects",fp_project_id,update_map,{"trigger":{""}});
